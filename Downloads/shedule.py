@@ -4,11 +4,13 @@ import pickle
 class Main:
     def __init__(self):
         self.display_menu()
-        self.load_data()		
+        self.load_data()
+		
     def load_data(self):
         inp_file = open('db.obj', 'r')
         self.data = pickle.load(inp_file)
-        inp_file.close()	
+        inp_file.close()
+		
     def display_menu(self):
         menu_list = ['Veiw shedule', 'Add entry', 'Edit entry', 
                      'Delete entry', 'Exit']
@@ -19,6 +21,7 @@ class Main:
             print str(i) + ' ' + menu_list[i-1]
         choice = raw_input('Your choice: ')
         self.menu_choice(choice)
+
     def menu_choice(self, choice):
         try:
             choice = int(choice)
@@ -34,13 +37,14 @@ class Main:
             self.edit_entry()
             self.display_menu()
         elif choice == 4:
-            self.del_entry()
+            self.delete_entry()
             self.display_menu()			
         elif choice == 5:
             self.exit_script()
         else:
             print "That wasn't a valid option. Try again"
             self.display_menu()
+
     def shedule_table(self):
         self.load_data()	
         heads = {'No': ['Departure station', 'Departure time', 
@@ -64,24 +68,31 @@ class Main:
         print '+-' + '-'*2 + '-+-' + '-'*17 +\
                   '-+-' + '-'*14 + '-+-' +\
                   '-'*15 + '-+-' + '-'*12 + '-+'				  
+
     def add_entry(self):
         self.load_data()	
-        shed = []
-        num_entry = input('Enter number of entry: ')
-        if num_entry in self.data:
-            print 'Entered number is already in the shedule. Enter another number'
+        shedule = []
+        try:		
+            num_entry = input('Enter number of entry: ')
+        except NameError:
+            print "That wasn't a number. Try again"
             self.add_entry()
         else:			
-            dep_stat = raw_input('Enter departure station: ')
-            shed.append(dep_stat)
-            dep_time = raw_input('Enter departure time: ')
-            shed.append(dep_time)
-            arr_stat = raw_input('Enter arrival station: ')
-            shed.append(arr_stat)
-            arr_time = raw_input('Enter arrival time: ')
-            shed.append(arr_time)
-            self.data[int(num_entry)] = shed
-            self.save_changes()		
+            if num_entry in self.data:
+                print 'Entered number is already in the shedule. Enter another number'
+                self.add_entry()
+            else:			
+                departure_station = raw_input('Enter departure station: ')
+                shedule.append(departure_station)
+                departure_time = raw_input('Enter departure time: ')
+                shedule.append(departure_time)
+                arrival_station = raw_input('Enter arrival station: ')
+                shedule.append(arrival_station)
+                arrival_time = raw_input('Enter arrival time: ')
+                shedule.append(arrival_time)
+                self.data[int(num_entry)] = shedule
+                self.save_changes()		
+
     def exit_script(self):
         s = raw_input('Do you really want to exit? (Y/N)')
         if s == 'Y' or s == 'y':
@@ -91,6 +102,7 @@ class Main:
         else:
             print 'You entered wrong value. Try again'
             self.exit_script()
+			
     def save_changes(self):
         s = raw_input('Do you want to save changes? (Y/N)')
         if s == 'Y' or s == 'y':
@@ -101,26 +113,35 @@ class Main:
             self.display_menu()
         else:
             print 'You entered wrong value. Try again'
-            self.save_changes()	
-    def del_entry(self):
+            self.save_changes()
+
+    def delete_entry(self):
         self.load_data()
-        del_ent = input('Enter number of entry you want to delete: ')
-        try:		
-            del self.data[del_ent]
-        except KeyError:
+        try:
+            del_entry = input('Enter number of entry you want to delete: ')
+            del self.data[del_entry]
+        except (KeyError, NameError):
             print "This number isn't in the shedule. Try again"
-            self.del_entry()			
-        self.save_changes()
+            self.delete_entry()
+        else:			
+            self.save_changes()
+
     def edit_entry(self):
-        self.load_data()	
-        self.edit_ent = input('Enter number of entry you want to edit: ')
-        if self.edit_ent in self.data:
-            self.entry = self.data[self.edit_ent]		
-            self.edit_ds()
-        else:
-            print "This number isn't in the shedule. Try again"
+        self.load_data()
+        try:		
+            self.edit_ent = input('Enter number of entry you want to edit: ')
+        except NameError:
+            print "That wasn't a valid option. Try again"
             self.edit_entry()
-    def edit_art(self):
+        else:			
+            if self.edit_ent in self.data:
+                self.entry = self.data[self.edit_ent]		
+                self.edit_departure_station()
+            else:
+                print "This number isn't in the shedule. Try again"
+                self.edit_entry()
+
+    def edit_arrival_time(self):
         print 'Is arrival time %s correct? ' %self.entry[3], 
         art = raw_input('(Y/N)')
         if art == 'Y' or art == 'y':
@@ -131,42 +152,46 @@ class Main:
             self.save_changes()
         else:
             print 'You entered wrong value. Try again'
-            self.edit_art()			
-    def edit_ars(self):
+            self.edit_arrival_time()
+
+    def edit_arrival_station(self):
         print 'Is arrival station %s correct? ' %self.entry[2], 
         ars = raw_input('(Y/N)')
         if ars == 'Y' or ars == 'y':
-            self.edit_art()							
+            self.edit_arrival_time()							
         elif ars == 'N' or ars == 'n':
             new_ars = raw_input('Enter new arrival station: ')
             self.data[self.edit_ent][2] = new_ars
-            self.edit_art()
+            self.edit_arrival_time()
         else:
             print 'You entered wrong value. Try again'
-            self.edit_ars()			
-    def edit_dt(self):
+            self.edit_arrival_station()
+
+    def edit_departure_time(self):
         print 'Is departure time %s correct? ' %self.entry[1], 
         dt = raw_input('(Y/N)')
         if dt == 'Y' or dt == 'y':
-            self.edit_ars()        					
+            self.edit_arrival_station()        					
         elif dt == 'N' or dt == 'n':
             new_dt = raw_input('Enter new departure time: ')
             self.data[self.edit_ent][1] = new_dt
-            self.edit_ars()
+            self.edit_arrival_station()
         else:
             print 'You entered wrong value. Try again'
-            self.edit_dt()			
-    def edit_ds(self):
+            self.edit_departure_time()
+
+    def edit_departure_station(self):
         print 'Is departure station %s correct? ' %self.entry[0], 
         ds = raw_input('(Y/N)')
         if ds == 'Y' or ds == 'y':
-            self.edit_dt()				
+            self.edit_departure_time()				
         elif ds == 'N' or ds == 'n':
             new_ds = raw_input('Enter new departure station: ')
             self.data[self.edit_ent][0] = new_ds
-            self.edit_dt()
+            self.edit_departure_time()
         else:
             print 'You entered wrong value. Try again'
-            self.edit_ds()			
+            self.edit_departure_station()
+
 if __name__ == '__main__':
     Main()
